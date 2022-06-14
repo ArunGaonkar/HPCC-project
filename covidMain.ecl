@@ -61,6 +61,6 @@ layout_Record := RECORD
 END;
 
 // reading the csv file with record as layout_Record
-file1 := DATASET('covid19::level1.csv', layout_Record, CSV);
+datasetOriginal := DATASET('covid19::level1.csv', layout_Record, CSV(HEADING(1)));
 
-file1;
+OUTPUT(datasetOriginal, NAMED('CovidDS'));
