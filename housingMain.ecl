@@ -185,10 +185,10 @@ testCondDep := DATASET([{1, DATASET([{'price'}, {'beds'}], ProbSpec), DATASET([{
                             {24, DATASET([{'sqfeet'}, {'baths'}], ProbSpec), DATASET([{'beds'}], ProbSpec)}   // 0.987
                             ], ProbQuery);
 
-resultCondDep := prob.Dependence(testCondDep);
+resultCondDep := prob.Dependence(testCondDep, dmethod := 'rcot');
 OUTPUT(resultCondDep, ALL, NAMED('ConditionalDependencyTests'));
 
-resultsCondIndep := prob.isIndependent(testCondDep);
+resultsCondIndep := prob.isIndependent(testCondDep, dmethod := 'rcot');
 OUTPUT(resultsCondIndep, ALL, NAMED('ConditionalIndependenceTests'));
 
 
@@ -199,3 +199,46 @@ OUTPUT(resultsCondIndep, ALL, NAMED('ConditionalIndependenceTests'));
 // +- 2 standard deviations from the mean, in the interval of 15, 
 // 1. find the expectation of price
 // 2. find the expectation of price, conditioned on other variables
+
+
+
+testCondDep2 := DATASET([{1, DATASET([{'price'}, {'beds'}], ProbSpec), DATASET([{'baths'},{'sqfeet'}], ProbSpec)},      // 0.866
+                            {2, DATASET([{'price'}, {'beds'}], ProbSpec), DATASET([{'sqfeet'},{'baths'}], ProbSpec)}, // 0.589
+                            {3, DATASET([{'price'}, {'baths'}], ProbSpec), DATASET([{'beds'},{'sqfeet'}], ProbSpec)},  // 0.888
+                            {4, DATASET([{'price'}, {'baths'}], ProbSpec), DATASET([{'sqfeet'},{'beds'}], ProbSpec)},// 0 and independent
+                            {5, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATASET([{'beds'},{'baths'}], ProbSpec)}, // 0.874
+                            {6, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATASET([{'baths'},{'beds'}], ProbSpec)},// 0.948
+                            
+                            {7, DATASET([{'beds'}, {'price'}], ProbSpec), DATASET([{'sqfeet'},{'baths'}], ProbSpec)},  // 0.054 but independent
+                            {8, DATASET([{'beds'}, {'price'}], ProbSpec), DATASET([{'baths'},{'sqfeet'}], ProbSpec)}, // 0.622
+                            {9, DATASET([{'beds'}, {'baths'}], ProbSpec), DATASET([{'price'},{'sqfeet'}], ProbSpec)},  // 0.999
+                            {10, DATASET([{'beds'}, {'baths'}], ProbSpec), DATASET([{'sqfeet'},{'price'}], ProbSpec)}, // 0 and independent
+                            {11, DATASET([{'beds'}, {'sqfeet'}], ProbSpec), DATASET([{'price'},{'baths'}], ProbSpec)}, // 0.683
+                            {12, DATASET([{'beds'}, {'sqfeet'}], ProbSpec), DATASET([{'baths'},{'price'}], ProbSpec)},// 0.735
+                            
+                            {13, DATASET([{'baths'}, {'price'}], ProbSpec), DATASET([{'beds'},{'sqfeet'}], ProbSpec)}, // 0.957
+                            {14, DATASET([{'baths'}, {'price'}], ProbSpec), DATASET([{'sqfeet'},{'beds'}], ProbSpec)}, // 0.632
+                            {15, DATASET([{'baths'}, {'beds'}], ProbSpec), DATASET([{'price'},{'sqfeet'}], ProbSpec)}, // 0.999
+                            {16, DATASET([{'baths'}, {'beds'}], ProbSpec), DATASET([{'sqfeet'},{'price'}], ProbSpec)}, // 0.933
+                            {17, DATASET([{'baths'}, {'sqfeet'}], ProbSpec), DATASET([{'price'},{'beds'}], ProbSpec)},// 0.959
+                            {18, DATASET([{'baths'}, {'sqfeet'}], ProbSpec), DATASET([{'beds'},{'price'}], ProbSpec)}, // 0.986
+                            
+                            {19, DATASET([{'sqfeet'}, {'price'}], ProbSpec), DATASET([{'beds'},{'baths'}], ProbSpec)}, // 0.839
+                            {20, DATASET([{'sqfeet'}, {'price'}], ProbSpec), DATASET([{'baths'},{'beds'}], ProbSpec)}, // 0.798
+                            {21, DATASET([{'sqfeet'}, {'beds'}], ProbSpec), DATASET([{'price'},{'baths'}], ProbSpec)}, // 0.978
+                            {22, DATASET([{'sqfeet'}, {'beds'}], ProbSpec), DATASET([{'baths'},{'price'}], ProbSpec)}, // 0.904
+                            {23, DATASET([{'sqfeet'}, {'baths'}], ProbSpec), DATASET([{'price'},{'beds'}], ProbSpec)}, // 0.999
+                            {24, DATASET([{'sqfeet'}, {'baths'}], ProbSpec), DATASET([{'beds'},{'price'}], ProbSpec)}   // 0.987
+                            ], ProbQuery);
+
+resultCondDep2Prob := prob.Dependence(testCondDep2, dmethod := 'prob');
+OUTPUT(resultCondDep2Prob, ALL, NAMED('ConditionalDependencyTests2Prob'));
+
+resultsCondIndep2prob := prob.isIndependent(testCondDep2, dmethod := 'prob');
+OUTPUT(resultsCondIndep2Prob, ALL, NAMED('ConditionalIndependenceTests2Prob'));
+
+resultCondDep2rcot := prob.Dependence(testCondDep2, dmethod := 'rcot');
+OUTPUT(resultCondDep2rcot, ALL, NAMED('ConditionalDependencyTests2rcot'));
+
+resultsCondIndep2rcot := prob.isIndependent(testCondDep2, dmethod := 'rcot');
+OUTPUT(resultsCondIndep2rcot, ALL, NAMED('ConditionalIndependenceTests2rcot'));
