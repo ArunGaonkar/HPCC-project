@@ -1,4 +1,4 @@
-// #OPTION('outputLimitMb','100');
+#OPTION('outputLimitMb','100');
 
 IMPORT ML_Core as MLC;
 IMPORT HPCC_Causality;
@@ -39,20 +39,23 @@ END;
 housingInitDS := DATASET('~.::housing1.csv', initLayout, CSV(HEADING(1)));
 
 // filtering the dataset based on the following criteria:
-// 1. price >= $1000 and price <= $10000
-// 2. sqfeet >= 300 and sqfeet <= 10000
+// 1. price >= $500 and price <= $3000
+// 2. sqfeet >= 500 and sqfeet <= 3000
 // 3. beds >= 1 and beds <= 4
 // 4. baths >= 1 and baths <= 4
 
-ds1 := housingInitDS(price >= 500 AND price <= 10000 AND sqfeet >= 300 AND sqfeet <= 10000 AND beds <= 4 AND beds >= 1 AND baths <= 4 AND baths >= 1);
-ds2 := ds1(types = 'house'); //size is (29650, 22)
+isGoodPrice := (housingInitDS.price >= 500) AND (housingInitDS.price <= 3000);
+isGoodSqFeet := (housingInitDS.sqfeet >= 500) AND (housingInitDS.sqfeet <= 3000);
+isGoodBeds := (housingInitDS.beds >= 1) AND (housingInitDS.beds <= 4);
+isGoodBaths := (housingInitDS.baths >= 1) AND (housingInitDS.baths <= 4);
+isHouse := (housingInitDS.types = 'house');
 
-ds3 := sort(ds2, types, price, sqfeet, beds, baths);
+ds1 := housingInitDS(isGoodPrice, isGoodSqFeet, isGoodBeds, isGoodBaths, isHouse);
+ds2 := sort(ds1, types, price, sqfeet, beds, baths);
 
-ds := PROJECT(ds3, TRANSFORM ( RECORDOF (LEFT), SELF.ID := COUNTER, SELF := LEFT));
+ds := PROJECT(ds2, TRANSFORM ( RECORDOF (LEFT), SELF.ID := COUNTER, SELF := LEFT));
 
 OUTPUT(ds[..10000], ALL, NAMED('HousingDS'));
-
 OUTPUT(COUNT(ds), ALL, NAMED('DSsize'));
 
 NFds := NORMALIZE(ds, 4, TRANSFORM (numericfield, SELF.wi := 1,
@@ -64,13 +67,12 @@ NFds := NORMALIZE(ds, 4, TRANSFORM (numericfield, SELF.wi := 1,
 // counter 1,2,3,4 = price, sqfeet, beds, baths
 
 OUTPUT(NFDS[..10000], ALL, NAMED('normalizedDS'));
-
 OUTPUT(COUNT(NFds), ALL, NAMED('size'));
 
 prob := Probability(NFds, ['price', 'sqfeet', 'beds', 'baths']);
 
 /*  Testing has been done for these blocks of code.
-*/
+
 // Expected value tests
 testExp := DATASET([{1, DATASET([{'price'}], ProbSpec), DATASET([], ProbSpec)}, // exp=1370.915
                         {2, DATASET([{'sqfeet'}], ProbSpec), DATASET([], ProbSpec)}, // exp=1496.42
@@ -191,6 +193,12 @@ OUTPUT(resultCondDep, ALL, NAMED('ConditionalDependencyTests'));
 resultsCondIndep := prob.isIndependent(testCondDep, dmethod := 'rcot');
 OUTPUT(resultsCondIndep, ALL, NAMED('ConditionalIndependenceTests'));
 
+resultCondDepprob := prob.Dependence(testCondDep, dmethod := 'prob');
+OUTPUT(resultCondDepprob, ALL, NAMED('ConditionalDependencyTestsprob'));
+
+resultsCondIndepprob := prob.isIndependent(testCondDep, dmethod := 'prob');
+OUTPUT(resultsCondIndepprob, ALL, NAMED('ConditionalIndependenceTestsprob'));
+
 //ToDo:
 // Conditional dependence tests, conditioned on 2 variable combinations
 // find the mean, standard deviation of each variable 
@@ -238,9 +246,14 @@ OUTPUT(resultCondDep2rcot, ALL, NAMED('ConditionalDependencyTests2rcot'));
 
 resultsCondIndep2rcot := prob.isIndependent(testCondDep2, dmethod := 'rcot');
 OUTPUT(resultsCondIndep2rcot, ALL, NAMED('ConditionalIndependenceTests2rcot'));
+*/
 
+/*
 // causal discovery
-RVs := DATASET([{'price'}, {'sqfeet'}, {'beds'}, {'baths'}], Types.RV);
+RVs := DATASET([{'price'}, 
+                    {'sqfeet'}, 
+                    {'beds'}, 
+                    {'baths'}], Types.RV);
 
 mod := DATASET([{'housing', RVs}], Types.cModel);
 OUTPUT(mod, NAMED('Model'));
@@ -249,4 +262,16 @@ cm := HPCC_Causality.Causality(mod, NFds);
 
 rept := cm.DiscoverModel();
 OUTPUT(rept, NAMED('DiscoveryReport'));
+*/
 
+testDists := DATASET([{1, DATASET([{'price'}], ProbSpec), DATASET([], ProbSpec)},
+                        {2, DATASET([{'sqfeet'}], ProbSpec), DATASET([], ProbSpec)},
+                        {3, DATASET([{'beds'}], ProbSpec), DATASET([], ProbSpec)},
+                        {4, DATASET([{'baths'}], ProbSpec), DATASET([], ProbSpec)},
+                        {5, DATASET([{'price'}], ProbSpec), DATASET([{'sqfeet', [300, 600]}, {'beds', [1,3]},{'baths',[1,3]}], ProbSpec)}
+        ], ProbQuery);
+
+resultDist := prob.Distr(testDists);
+OUTPUT(resultDist, ALL, NAMED('Distributions'));
+
+OUTPUT(resultDist,{mean, median, stdev}, ALL, NAMED('PriceDistribution'));
