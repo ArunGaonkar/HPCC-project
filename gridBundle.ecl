@@ -3,9 +3,6 @@ IMPORT HPCC_Causality;
 
 Probability := HPCC_Causality.Probability;
 
-
-
-
 nNodes := Thorlib.nodes();
 node := Thorlib.node();
 
