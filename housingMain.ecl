@@ -282,8 +282,5 @@ testDists := DATASET([{1, DATASET([{'price'}], ProbSpec), DATASET([], ProbSpec)}
 resultDist := prob.Distr(testDists);
 OUTPUT(resultDist, ALL, NAMED('Distributions'));
 
-<<<<<<< HEAD
 OUTPUT(resultDist,{mean, kurtosis}, ALL, NAMED('PriceDistribution'));
-=======
-OUTPUT(resultDist,{mean, median, stdev}, ALL, NAMED('PriceDistribution'));
->>>>>>> a8dfde6a6ef8ae8d1228b9c236d1974a90d16a4a
+Merge branch 'main' of 
