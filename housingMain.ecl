@@ -55,6 +55,10 @@ ds2 := sort(ds1, types, price, sqfeet, beds, baths);
 
 ds := PROJECT(ds2, TRANSFORM ( RECORDOF (LEFT), SELF.ID := COUNTER, SELF := LEFT));
 
+<<<<<<< HEAD
+=======
+OUTPUT(ds[..10000], ALL, NAMED('HousingDS'));
+>>>>>>> a8dfde6a6ef8ae8d1228b9c236d1974a90d16a4a
 OUTPUT(COUNT(ds), ALL, NAMED('DSsize'));
 OUTPUT(ds[..10000], ALL, NAMED('HousingDS'));
 
@@ -66,6 +70,10 @@ NFds := NORMALIZE(ds, 4, TRANSFORM (numericfield, SELF.wi := 1,
                                                     IF(counter = 3, LEFT.beds, LEFT.baths)))));
 // counter 1,2,3,4 = price, sqfeet, beds, baths
 
+<<<<<<< HEAD
+=======
+OUTPUT(NFDS[..10000], ALL, NAMED('normalizedDS'));
+>>>>>>> a8dfde6a6ef8ae8d1228b9c236d1974a90d16a4a
 OUTPUT(COUNT(NFds), ALL, NAMED('size'));
 OUTPUT(NFDS[..10000], ALL, NAMED('normalizedDS'));
 
@@ -274,4 +282,8 @@ testDists := DATASET([{1, DATASET([{'price'}], ProbSpec), DATASET([], ProbSpec)}
 resultDist := prob.Distr(testDists);
 OUTPUT(resultDist, ALL, NAMED('Distributions'));
 
+<<<<<<< HEAD
 OUTPUT(resultDist,{mean, kurtosis}, ALL, NAMED('PriceDistribution'));
+=======
+OUTPUT(resultDist,{mean, median, stdev}, ALL, NAMED('PriceDistribution'));
+>>>>>>> a8dfde6a6ef8ae8d1228b9c236d1974a90d16a4a

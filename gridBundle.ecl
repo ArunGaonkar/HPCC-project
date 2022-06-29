@@ -21,6 +21,7 @@ EXPORT DATASET (grid) makeGrid (STRING v1, STRING v2='', STRING v3='', UNSIGNED 
     // if v2 is not null and v3 is not null, dims := 3
     
     dims := IF(v3 = '', IF(v2 = '', 1, 2), 3);
+<<<<<<< HEAD
     
     // if the dataset is not passed, then how to get the distribution of the variable?
     // and what is ps in the grid.py? ProbSpace has the attribute distr.
@@ -34,6 +35,11 @@ EXPORT DATASET (grid) makeGrid (STRING v1, STRING v2='', STRING v3='', UNSIGNED 
     // maxvars is 100 percentile of distribution of v1
 
     grid makeItem(UNSIGNED c) := TRANSFORM
+=======
+
+    grid makeItem(UNSIGNED c) := TRANSFORM
+
+>>>>>>> a8dfde6a6ef8ae8d1228b9c236d1974a90d16a4a
     END; 
     grid := DATASET(nItems, makeItem(counter), LOCAL);
     return grid;
