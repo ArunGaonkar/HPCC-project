@@ -1,13 +1,14 @@
 #OPTION('outputLimitMb','100');
 
-IMPORT ML_Core as MLC;
+IMPORT ML_Core;
 IMPORT HPCC_Causality;
 IMPORT HPCC_Causality.Types;
 
 ProbSpec := Types.ProbSpec;
 ProbQuery := Types.ProbQuery;
-numericfield := MLC.types.NumericField;
+numericfield := ML_Core.types.NumericField;
 Probability := HPCC_Causality.Probability;
+Encoder := ML_Core.Preprocessing.LabelEncoder;
 
 // intial record layout
 initLayout := RECORD 
@@ -50,7 +51,16 @@ isGoodBeds := (housingInitDS.beds >= 1) AND (housingInitDS.beds <= 4);
 isGoodBaths := (housingInitDS.baths >= 1) AND (housingInitDS.baths <= 4);
 isHouse := (housingInitDS.types = 'house');
 
-ds1 := housingInitDS(isGoodPrice, isGoodSqFeet, isGoodBeds, isGoodBaths, isHouse);
+KeyLayout := RECORD
+    SET OF STRING types;
+END;
+
+key := ROW({['apartment', 'duplex', 'house', 'condo', 'flat', 'townhouse', 'manufactured', 'loft', 'cottage/cabin', 'in-law', 'land', 'assisted living']}, KeyLayout);
+
+result1 := Encoder.encode(housingInitDS, key);
+OUTPUT(result1[..10000],ALL, NAMED('typesEncoded'));
+
+ds1 := housingInitDS(isGoodPrice, isGoodSqFeet, isGoodBeds, isGoodBaths);
 ds2 := sort(ds1, types, price, sqfeet, beds, baths);
 
 ds := PROJECT(ds2, TRANSFORM ( RECORDOF (LEFT), SELF.ID := COUNTER, SELF := LEFT));
@@ -262,16 +272,21 @@ cm := HPCC_Causality.Causality(mod, NFds);
 
 rept := cm.DiscoverModel();
 OUTPUT(rept, NAMED('DiscoveryReport'));
-*/
+v1 := 'price';
+v2 := 'sqfeet';
+v3 := 'beds';
+v4 := 'baths';
 
-testDists := DATASET([{1, DATASET([{'price'}], ProbSpec), DATASET([], ProbSpec)},
-                        {2, DATASET([{'sqfeet'}], ProbSpec), DATASET([], ProbSpec)},
-                        {3, DATASET([{'beds'}], ProbSpec), DATASET([], ProbSpec)},
-                        {4, DATASET([{'baths'}], ProbSpec), DATASET([], ProbSpec)},
+testDists := DATASET([{1, DATASET([{v1}], ProbSpec), DATASET([], ProbSpec)},
+                        {2, DATASET([{v2}], ProbSpec), DATASET([], ProbSpec)},
+                        {3, DATASET([{v3}], ProbSpec), DATASET([], ProbSpec)},
+                        {4, DATASET([{v4}], ProbSpec), DATASET([], ProbSpec)},
                         {5, DATASET([{'price'}], ProbSpec), DATASET([{'sqfeet', [300, 600]}, {'beds', [1,3]},{'baths',[1,3]}], ProbSpec)}
         ], ProbQuery);
 
 resultDist := prob.Distr(testDists);
 OUTPUT(resultDist, ALL, NAMED('Distributions'));
 
-OUTPUT(resultDist,{mean, kurtosis}, ALL, NAMED('PriceDistribution'));
+OUTPUT(resultDist, ALL, NAMED('PriceDistribution'));
+*/
+
