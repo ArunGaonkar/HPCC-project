@@ -10,7 +10,7 @@ numericfield := ML_Core.types.NumericField;
 Probability := HPCC_Causality.Probability;
 Encoder := ML_Core.Preprocessing.LabelEncoder;
 
-// intial record layout
+// initial record layout
 initLayout := RECORD 
     UNSIGNED INTEGER5 id;
     UTF8 url;
@@ -90,7 +90,6 @@ OUTPUT(NFDS[..10000], ALL, NAMED('normalizedDS'));
 // Probability model for the dataset
 prob := Probability(NFds, ['price', 'sqfeet', 'beds', 'baths', 'types']);
 
-/*  Testing has been done for these blocks of code.
 // Expected value tests
 testExp := DATASET([{1, DATASET([{'price'}], ProbSpec), DATASET([], ProbSpec)}, // exp=1370.915
                         {2, DATASET([{'sqfeet'}], ProbSpec), DATASET([], ProbSpec)}, // exp=1496.42
@@ -132,7 +131,6 @@ resultProb := prob.P(testProb);
 OUTPUT(resultProb, ALL, NAMED('Probabilities'));
 
 // Distribution Tests
-
 testDists := DATASET([{1, DATASET([{'price'}], ProbSpec), DATASET([], ProbSpec)},
                         {2, DATASET([{'sqfeet'}], ProbSpec), DATASET([], ProbSpec)},
                         {3, DATASET([{'beds'}], ProbSpec), DATASET([], ProbSpec)},
@@ -177,7 +175,6 @@ resultDep2 := prob.Dependence(testDep, dmethod := 'rcot');
 OUTPUT(resultDep2, ALL, NAMED('DependencyTests2'));
 
 // Independence Tests
-
 // Result of 1 indicates that the two targets are most likely independent. 
 // 0 indicates probable dependence.
 
@@ -186,7 +183,6 @@ OUTPUT(resultsIndep1, ALL, NAMED('IndependenceTests1'));
 
 resultsIndep2 := prob.isIndependent(testDep, dmethod := 'rcot'); 
 OUTPUT(resultsIndep2, ALL, NAMED('IndependenceTests2'));
-*/
 
 // Conditional dependency tests on 1 varible
 testCondDep1var := DATASET([{1, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATASET([{'beds'}], ProbSpec)},
@@ -201,7 +197,6 @@ testCondDep1var := DATASET([{1, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATA
                             {10, DATASET([{'price'}, {'types'}], ProbSpec), DATASET([{'sqfeet'}], ProbSpec)},
                             {11, DATASET([{'price'}, {'types'}], ProbSpec), DATASET([{'beds'}], ProbSpec)},
                             {12, DATASET([{'price'}, {'types'}], ProbSpec), DATASET([{'baths'}], ProbSpec)},
-
                             {13, DATASET([{'sqfeet'}, {'beds'}], ProbSpec), DATASET([{'price'}], ProbSpec)},
                             {14, DATASET([{'sqfeet'}, {'beds'}], ProbSpec), DATASET([{'baths'}], ProbSpec)},
                             {15, DATASET([{'sqfeet'}, {'beds'}], ProbSpec), DATASET([{'types'}], ProbSpec)},
@@ -211,33 +206,30 @@ testCondDep1var := DATASET([{1, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATA
                             {19, DATASET([{'sqfeet'}, {'types'}], ProbSpec), DATASET([{'price'}], ProbSpec)},
                             {20, DATASET([{'sqfeet'}, {'types'}], ProbSpec), DATASET([{'beds'}], ProbSpec)},
                             {21, DATASET([{'sqfeet'}, {'types'}], ProbSpec), DATASET([{'baths'}], ProbSpec)},
-
                             {22, DATASET([{'beds'}, {'baths'}], ProbSpec), DATASET([{'price'}], ProbSpec)},
                             {23, DATASET([{'beds'}, {'baths'}], ProbSpec), DATASET([{'sqfeet'}], ProbSpec)},
                             {24, DATASET([{'beds'}, {'baths'}], ProbSpec), DATASET([{'types'}], ProbSpec)},
                             {25, DATASET([{'beds'}, {'types'}], ProbSpec), DATASET([{'price'}], ProbSpec)},
                             {26, DATASET([{'beds'}, {'types'}], ProbSpec), DATASET([{'sqfeet'}], ProbSpec)},
                             {27, DATASET([{'beds'}, {'types'}], ProbSpec), DATASET([{'baths'}], ProbSpec)},
-
                             {28, DATASET([{'baths'}, {'types'}], ProbSpec), DATASET([{'price'}], ProbSpec)},
                             {29, DATASET([{'baths'}, {'types'}], ProbSpec), DATASET([{'sqfeet'}], ProbSpec)},
                             {30, DATASET([{'baths'}, {'types'}], ProbSpec), DATASET([{'beds'}], ProbSpec)}
                             ], ProbQuery);
 
-// resultCondDepprob1 := prob.Dependence(testCondDep1var, dmethod := 'prob');
-// OUTPUT(resultCondDepprob1, ALL, NAMED('ConditionalDependencyTestsPROB'));
+resultCondDepprob1 := prob.Dependence(testCondDep1var, dmethod := 'prob');
+OUTPUT(resultCondDepprob1, ALL, NAMED('ConditionalDependencyTestsPROB'));
 
-// resultsCondIndepprob1 := prob.isIndependent(testCondDep1var, dmethod := 'prob');
-// OUTPUT(resultsCondIndepprob1, ALL, NAMED('ConditionalIndependenceTestsPROB'));
+resultsCondIndepprob1 := prob.isIndependent(testCondDep1var, dmethod := 'prob');
+OUTPUT(resultsCondIndepprob1, ALL, NAMED('ConditionalIndependenceTestsPROB'));
 
-// resultCondDep2 := prob.Dependence(testCondDep1var, dmethod := 'rcot');
-// OUTPUT(resultCondDep2, ALL, NAMED('ConditionalDependencyTestsRCOT'));
+resultCondDep2 := prob.Dependence(testCondDep1var, dmethod := 'rcot');
+OUTPUT(resultCondDep2, ALL, NAMED('ConditionalDependencyTestsRCOT'));
 
-// resultsCondIndep2 := prob.isIndependent(testCondDep1var, dmethod := 'rcot');
-// OUTPUT(resultsCondIndep2, ALL, NAMED('ConditionalIndependenceTestsRCOT'));
+resultsCondIndep2 := prob.isIndependent(testCondDep1var, dmethod := 'rcot');
+OUTPUT(resultsCondIndep2, ALL, NAMED('ConditionalIndependenceTestsRCOT'));
 
 // Conditional dependency tests on 2 varible
-
 testCondDep2var := DATASET([{1, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATASET([{'beds'}, {'baths'}], ProbSpec)},
                             {2, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATASET([{'beds'}, {'types'}], ProbSpec)},
                             {3, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATASET([{'types'}, {'baths'}], ProbSpec)},
@@ -270,6 +262,7 @@ testCondDep2var := DATASET([{1, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATA
                             {30, DATASET([{'baths'}, {'types'}], ProbSpec), DATASET([{'beds'}, {'price'}], ProbSpec)}
                             ], ProbQuery);
 
+/* these queries are taking over 7 hrs to execute 
 resultCondDep2Prob := prob.Dependence(testCondDep2var, dmethod := 'prob');
 OUTPUT(resultCondDep2Prob, ALL, NAMED('ConditionalDependencyTests2Prob'));
 
@@ -281,13 +274,14 @@ OUTPUT(resultCondDep2rcot, ALL, NAMED('ConditionalDependencyTests2rcot'));
 
 resultsCondIndep2rcot := prob.isIndependent(testCondDep2var, dmethod := 'rcot');
 OUTPUT(resultsCondIndep2rcot, ALL, NAMED('ConditionalIndependenceTests2rcot'));
+*/
 
-/*
 // causal discovery
 RVs := DATASET([{'price'}, 
                     {'sqfeet'}, 
                     {'beds'}, 
-                    {'baths'}], Types.RV);
+                    {'baths'},
+                    {'types'}], Types.RV);
 
 mod := DATASET([{'housing', RVs}], Types.cModel);
 OUTPUT(mod, NAMED('Model'));
@@ -296,5 +290,3 @@ cm := HPCC_Causality.Causality(mod, NFds);
 
 rept := cm.DiscoverModel();
 OUTPUT(rept, NAMED('DiscoveryReport'));
-
-*/
