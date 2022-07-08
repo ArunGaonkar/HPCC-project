@@ -17,7 +17,7 @@ grid := RECORD
     SET OF REAL gridItem;
 END;
 
-EXPORT DATASET (grid) makeGrid (<INSERT TYPE HERE> prob, STRING v1, STRING v2='', STRING v3='', UNSIGNED INTEGER numPts=20, REAL lim):= FUNCTION 
+EXPORT DATASET (grid) makeGrid (TYPEOF(Probability) prob, STRING v1, STRING v2='', STRING v3='', UNSIGNED INTEGER numPts=20, REAL lim):= FUNCTION 
 
     // what is the type of prob?
 
@@ -26,6 +26,7 @@ EXPORT DATASET (grid) makeGrid (<INSERT TYPE HERE> prob, STRING v1, STRING v2=''
     // if v2 is not null and v3 is not null, dims := 3
     
     dims := IF(v3 = '', IF(v2 = '', 1, 2), 3);
+    numTests := POWER(numPts, dims);
     
     // if the dataset is not passed, then how to get the distribution of the variable?
     // convert to numeric field and get the distribution
@@ -42,9 +43,23 @@ EXPORT DATASET (grid) makeGrid (<INSERT TYPE HERE> prob, STRING v1, STRING v2=''
                         {2, DATASET([{v2}], ProbSpec), DATASET([], ProbSpec)},
                         {3, DATASET([{v3}], ProbSpec), DATASET([], ProbSpec)}
         ], ProbQuery);
+    
+    testdist2 := testDists[1..dims];
 
     resultDist := prob.Distr(testDists);
 
+    v1min := resultDist.distr[1].minval;
+    v1max := resultDist.distr[1].maxval;
+    v2min := resultDist.distr[2].minval;
+    v2max := resultDist.distr[2].maxval;    
+    v3min := resultDist.distr[3].minval; 
+    v3max := resultDist.distr[3].maxval;
+
+
+    findPoint(REAL minv, REAL maxv, UNSIGNED indx) := FUNCTION
+        val := (maxv - minv) / numPts * indx + minv;
+        return val;
+    END
 
     // after getting the distribution, how can I get the percentile.
 
@@ -52,7 +67,12 @@ EXPORT DATASET (grid) makeGrid (<INSERT TYPE HERE> prob, STRING v1, STRING v2=''
     // maxvars is 100 percentile of distribution of v1
 
     grid makeItem(UNSIGNED c) := TRANSFORM
+        SELF.id := c;
+        x := TRUNCATE((c-1) / numPts);
+        y := (c-1) % numPts + 1;
+        self.gridItem[findPoint(v1min, v1max, x),findPoint(v2min, v2max, y)];
     END; 
-    grid := DATASET(numPts, makeItem(counter), LOCAL);
+
+    grid := DATASET(numPts, makeItem(counter));
     return grid;
 END;

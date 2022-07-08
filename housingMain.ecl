@@ -49,7 +49,7 @@ isGoodPrice := (housingInitDS.price >= 500) AND (housingInitDS.price <= 3000);
 isGoodSqFeet := (housingInitDS.sqfeet >= 500) AND (housingInitDS.sqfeet <= 3000);
 isGoodBeds := (housingInitDS.beds >= 1) AND (housingInitDS.beds <= 4);
 isGoodBaths := (housingInitDS.baths >= 1) AND (housingInitDS.baths <= 4);
-isHouse := (housingInitDS.types = 'house');
+// isHouse := (housingInitDS.types = 'house');
 
 // record layout for encoding the 'types' field
 KeyLayout := RECORD
@@ -59,14 +59,14 @@ END;
 // encoding keys for the 'types' field
 key := ROW({['apartment', 'duplex', 'house', 'condo', 'flat', 'townhouse', 'manufactured', 'loft', 'cottage/cabin', 'in-law', 'land', 'assisted living']}, KeyLayout);
 
-// encoding the 'types' in the dataset
-ds1 := Encoder.encode(housingInitDS, key); 
-
 // filtering the dataset based on the above criteria
-ds2 := housingInitDS(isGoodPrice, isGoodSqFeet, isGoodBeds, isGoodBaths); 
+ds1 := housingInitDS(isGoodPrice, isGoodSqFeet, isGoodBeds, isGoodBaths); 
+
+// encoding the 'types' in the dataset
+ds2 := Encoder.encode(ds1, key); 
 
 // sorting the dataset
-ds3 := sort(ds1, types, price, sqfeet, beds, baths); 
+ds3 := sort(ds2, types, price, sqfeet, beds, baths); 
 
 // id now starts from 1
 ds := PROJECT(ds3, TRANSFORM ( RECORDOF (LEFT), SELF.ID := COUNTER, SELF := LEFT)); 
@@ -105,8 +105,8 @@ testExp := DATASET([{1, DATASET([{'price'}], ProbSpec), DATASET([], ProbSpec)}, 
                         {12, DATASET([{'types'}], ProbSpec), DATASET([], ProbSpec)}
 ], ProbQuery);
 
-resultExp := prob.E(testExp);
-OUTPUT(resultExp, ALL, NAMED('expectedValues'));
+// resultExp := prob.E(testExp);
+// OUTPUT(resultExp, ALL, NAMED('expectedValues'));
 
 // probability of the apartment to be equal to 500 is 0.0018
 test := DATASET([{1, DATASET([{'price', [500]}], ProbSpec), DATASET([], ProbSpec)}], ProbQuery);
@@ -127,8 +127,8 @@ testProb := DATASET([{1, DATASET([{'price', [500, 1000]}], ProbSpec), DATASET([]
                     {13, DATASET([{'price', [1500, 2000]}], ProbSpec), DATASET([{'beds', [1]}, {'baths',[2]}], ProbSpec)} // exp = 0.406
         ], ProbQuery);
 
-resultProb := prob.P(testProb);
-OUTPUT(resultProb, ALL, NAMED('Probabilities'));
+// resultProb := prob.P(testProb);
+// OUTPUT(resultProb, ALL, NAMED('Probabilities'));
 
 // Distribution Tests
 testDists := DATASET([{1, DATASET([{'price'}], ProbSpec), DATASET([], ProbSpec)},
@@ -139,8 +139,8 @@ testDists := DATASET([{1, DATASET([{'price'}], ProbSpec), DATASET([], ProbSpec)}
                         {6, DATASET([{'price'}], ProbSpec), DATASET([{'sqfeet', [300, 600]}, {'beds', [1,3]},{'baths',[1,3]}], ProbSpec)}
         ], ProbQuery);
 
-resultDist := prob.Distr(testDists);
-OUTPUT(resultDist, ALL, NAMED('Distributions'));
+// resultDist := prob.Distr(testDists);
+// OUTPUT(resultDist, ALL, NAMED('Distributions'));
 
 // Dependency Tests
 testDep := DATASET([{1, DATASET([{'price'},{'sqfeet'}], ProbSpec), DATASET([], ProbSpec)},
@@ -168,21 +168,21 @@ testDep := DATASET([{1, DATASET([{'price'},{'sqfeet'}], ProbSpec), DATASET([], P
 // Values less than .5 indicate probable independence.
 // Values greater than .5 indicate probable dependence
 
-resultDep1 := prob.Dependence(testDep);
-OUTPUT(resultDep1, ALL, NAMED('DependencyTests1'));
+// resultDep1 := prob.Dependence(testDep);
+// OUTPUT(resultDep1, ALL, NAMED('DependencyTests1'));
 
-resultDep2 := prob.Dependence(testDep, dmethod := 'rcot');
-OUTPUT(resultDep2, ALL, NAMED('DependencyTests2'));
+// resultDep2 := prob.Dependence(testDep, dmethod := 'rcot');
+// OUTPUT(resultDep2, ALL, NAMED('DependencyTests2'));
 
 // Independence Tests
 // Result of 1 indicates that the two targets are most likely independent. 
 // 0 indicates probable dependence.
 
-resultsIndep1 := prob.isIndependent(testDep); 
-OUTPUT(resultsIndep1, ALL, NAMED('IndependenceTests1'));
+// resultsIndep1 := prob.isIndependent(testDep); 
+// OUTPUT(resultsIndep1, ALL, NAMED('IndependenceTests1'));
 
-resultsIndep2 := prob.isIndependent(testDep, dmethod := 'rcot'); 
-OUTPUT(resultsIndep2, ALL, NAMED('IndependenceTests2'));
+// resultsIndep2 := prob.isIndependent(testDep, dmethod := 'rcot'); 
+// OUTPUT(resultsIndep2, ALL, NAMED('IndependenceTests2'));
 
 // Conditional dependency tests on 1 varible
 testCondDep1var := DATASET([{1, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATASET([{'beds'}], ProbSpec)},
@@ -217,17 +217,17 @@ testCondDep1var := DATASET([{1, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATA
                             {30, DATASET([{'baths'}, {'types'}], ProbSpec), DATASET([{'beds'}], ProbSpec)}
                             ], ProbQuery);
 
-resultCondDepprob1 := prob.Dependence(testCondDep1var, dmethod := 'prob');
-OUTPUT(resultCondDepprob1, ALL, NAMED('ConditionalDependencyTestsPROB'));
+// resultCondDepprob1 := prob.Dependence(testCondDep1var, dmethod := 'prob');
+// OUTPUT(resultCondDepprob1, ALL, NAMED('ConditionalDependencyTestsPROB'));
 
-resultsCondIndepprob1 := prob.isIndependent(testCondDep1var, dmethod := 'prob');
-OUTPUT(resultsCondIndepprob1, ALL, NAMED('ConditionalIndependenceTestsPROB'));
+// resultsCondIndepprob1 := prob.isIndependent(testCondDep1var, dmethod := 'prob');
+// OUTPUT(resultsCondIndepprob1, ALL, NAMED('ConditionalIndependenceTestsPROB'));
 
-resultCondDep2 := prob.Dependence(testCondDep1var, dmethod := 'rcot');
-OUTPUT(resultCondDep2, ALL, NAMED('ConditionalDependencyTestsRCOT'));
+// resultCondDep2 := prob.Dependence(testCondDep1var, dmethod := 'rcot');
+// OUTPUT(resultCondDep2, ALL, NAMED('ConditionalDependencyTestsRCOT'));
 
-resultsCondIndep2 := prob.isIndependent(testCondDep1var, dmethod := 'rcot');
-OUTPUT(resultsCondIndep2, ALL, NAMED('ConditionalIndependenceTestsRCOT'));
+// resultsCondIndep2 := prob.isIndependent(testCondDep1var, dmethod := 'rcot');
+// OUTPUT(resultsCondIndep2, ALL, NAMED('ConditionalIndependenceTestsRCOT'));
 
 // Conditional dependency tests on 2 varible
 testCondDep2var := DATASET([{1, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATASET([{'beds'}, {'baths'}], ProbSpec)},
