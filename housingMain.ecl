@@ -230,6 +230,8 @@ testCondDep1var := DATASET([{1, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATA
 // OUTPUT(resultsCondIndep2, ALL, NAMED('ConditionalIndependenceTestsRCOT'));
 
 // Conditional dependency tests on 2 varible
+// testCondDep2var := DATASET([{1, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATASET([{'beds'}, {'baths'}], ProbSpec)}], ProbQuery);
+
 testCondDep2var := DATASET([{1, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATASET([{'beds'}, {'baths'}], ProbSpec)},
                             {2, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATASET([{'beds'}, {'types'}], ProbSpec)},
                             {3, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATASET([{'types'}, {'baths'}], ProbSpec)},
@@ -262,17 +264,17 @@ testCondDep2var := DATASET([{1, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATA
                             {30, DATASET([{'baths'}, {'types'}], ProbSpec), DATASET([{'beds'}, {'price'}], ProbSpec)}
                         ], ProbQuery);
 
-// resultCondDep2Prob := prob.Dependence(testCondDep2var, dmethod := 'prob');
-// OUTPUT(resultCondDep2Prob, ALL, NAMED('ConditionalDependencyTests2Prob'));
+resultCondDep2Prob := prob.Dependence(testCondDep2var, dmethod := 'prob');
+OUTPUT(resultCondDep2Prob, ALL, NAMED('ConditionalDependencyTests2Prob'));
 
-// resultsCondIndep2prob := prob.isIndependent(testCondDep2var, dmethod := 'prob');
-// OUTPUT(resultsCondIndep2Prob, ALL, NAMED('ConditionalIndependenceTests2Prob'));
+resultsCondIndep2prob := prob.isIndependent(testCondDep2var, dmethod := 'prob');
+OUTPUT(resultsCondIndep2Prob, ALL, NAMED('ConditionalIndependenceTests2Prob'));
 
-// resultCondDep2rcot := prob.Dependence(testCondDep2var, dmethod := 'rcot');
-// OUTPUT(resultCondDep2rcot, ALL, NAMED('ConditionalDependencyTests2rcot'));
+resultCondDep2rcot := prob.Dependence(testCondDep2var, dmethod := 'rcot');
+OUTPUT(resultCondDep2rcot, ALL, NAMED('ConditionalDependencyTests2rcot'));
 
-// resultsCondIndep2rcot := prob.isIndependent(testCondDep2var, dmethod := 'rcot');
-// OUTPUT(resultsCondIndep2rcot, ALL, NAMED('ConditionalIndependenceTests2rcot'));
+resultsCondIndep2rcot := prob.isIndependent(testCondDep2var, dmethod := 'rcot');
+OUTPUT(resultsCondIndep2rcot, ALL, NAMED('ConditionalIndependenceTests2rcot'));
 
 // causal discovery
 RVs := DATASET([{'price'}, 

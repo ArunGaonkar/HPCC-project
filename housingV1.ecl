@@ -1,4 +1,4 @@
-// #OPTION('outputLimitMb','100');
+#OPTION('outputLimitMb','100');
 
 IMPORT ML_Core as MLC;
 IMPORT HPCC_Causality;
@@ -45,15 +45,15 @@ housingInitDS := DATASET('~.::housing1.csv', initLayout, CSV(HEADING(1)));
 // 4. baths >= 1 and baths <= 4
 
 ds1 := housingInitDS(price >= 500 AND price <= 10000 AND sqfeet >= 300 AND sqfeet <= 10000 AND beds <= 4 AND beds >= 1 AND baths <= 4 AND baths >= 1);
-ds2 := ds1(types = 'house'); //size is (29650, 22)
+// ds2 := ds1(types = 'house'); //size is (29650, 22)
 
-ds3 := sort(ds2, types, price, sqfeet, beds, baths);
+ds3 := sort(ds1, types, price, sqfeet, beds, baths);
 
 ds := PROJECT(ds3, TRANSFORM ( RECORDOF (LEFT), SELF.ID := COUNTER, SELF := LEFT));
 
-OUTPUT(ds[..10000], ALL, NAMED('HousingDS'));
+// OUTPUT(ds[..10000], ALL, NAMED('HousingDS'));
 
-OUTPUT(COUNT(ds), ALL, NAMED('DSsize'));
+// OUTPUT(COUNT(ds), ALL, NAMED('DSsize'));
 
 NFds := NORMALIZE(ds, 4, TRANSFORM (numericfield, SELF.wi := 1,
                                     SELF.number := counter,
@@ -63,9 +63,9 @@ NFds := NORMALIZE(ds, 4, TRANSFORM (numericfield, SELF.wi := 1,
                                                     IF(counter = 3, LEFT.beds, LEFT.baths)))));
 // counter 1,2,3,4 = price, sqfeet, beds, baths
 
-OUTPUT(NFDS[..10000], ALL, NAMED('normalizedDS'));
+// OUTPUT(NFDS[..10000], ALL, NAMED('normalizedDS'));
 
-OUTPUT(COUNT(NFds), ALL, NAMED('size'));
+// OUTPUT(COUNT(NFds), ALL, NAMED('size'));
 
 prob := Probability(NFds, ['price', 'sqfeet', 'beds', 'baths']);
 
@@ -85,8 +85,8 @@ testExp := DATASET([{1, DATASET([{'price'}], ProbSpec), DATASET([], ProbSpec)}, 
                         {11, DATASET([{'price'}], ProbSpec), DATASET([{'sqfeet', [900, 1200]}, {'beds', [1]},{'baths',[1]}], ProbSpec)} // exp=1143.44
 ], ProbQuery);
 
-resultExp := prob.E(testExp);
-OUTPUT(resultExp, ALL, NAMED('expectedValues'));
+// resultExp := prob.E(testExp);
+// OUTPUT(resultExp, ALL, NAMED('expectedValues'));
 
 // probability of the apartment to be equal to 500 is 0.0018
 test := DATASET([{1, DATASET([{'price', [500]}], ProbSpec), DATASET([], ProbSpec)}], ProbQuery);
@@ -107,8 +107,8 @@ testProb := DATASET([{1, DATASET([{'price', [500, 1000]}], ProbSpec), DATASET([]
                     {13, DATASET([{'price', [1500, 2000]}], ProbSpec), DATASET([{'beds', [1]}, {'baths',[2]}], ProbSpec)} // exp = 0.406
         ], ProbQuery);
 
-resultProb := prob.P(testProb);
-OUTPUT(resultProb, ALL, NAMED('Probabilities'));
+// resultProb := prob.P(testProb);
+// OUTPUT(resultProb, ALL, NAMED('Probabilities'));
 
 // Distribution Tests
 
@@ -119,8 +119,8 @@ testDists := DATASET([{1, DATASET([{'price'}], ProbSpec), DATASET([], ProbSpec)}
                         {5, DATASET([{'price'}], ProbSpec), DATASET([{'sqfeet', [300, 600]}, {'beds', [1,3]},{'baths',[1,3]}], ProbSpec)}
         ], ProbQuery);
 
-resultDist := prob.Distr(testDists);
-OUTPUT(resultDist, ALL, NAMED('Distributions'));
+// resultDist := prob.Distr(testDists);
+// OUTPUT(resultDist, ALL, NAMED('Distributions'));
 
 // Dependency Tests
 // Values less than .5 indicate probable independence.
@@ -140,13 +140,13 @@ testDep := DATASET([{1, DATASET([{'price'},{'sqfeet'}], ProbSpec), DATASET([], P
                         {12, DATASET([{'baths'},{'beds'}], ProbSpec), DATASET([], ProbSpec)}
                         ], ProbQuery);
 
-resultDep := prob.Dependence(testDep);
-OUTPUT(resultDep, ALL, NAMED('DependencyTests'));
+// resultDep := prob.Dependence(testDep);
+// OUTPUT(resultDep, ALL, NAMED('DependencyTests'));
 
 // Independence Tests
 // Result of 1 indicates that the two targets are most likely independent. 0 indicates probable dependence.
-resultsIndep := prob.isIndependent(testDep); 
-OUTPUT(resultsIndep, ALL, NAMED('IndependenceTests'));
+// resultsIndep := prob.isIndependent(testDep); 
+// OUTPUT(resultsIndep, ALL, NAMED('IndependenceTests'));
 
 // price and sqfeet are dependent with a confidence of 0.999
 // price and beds are dependent with a confidence of 0.987
@@ -185,60 +185,62 @@ testCondDep := DATASET([{1, DATASET([{'price'}, {'beds'}], ProbSpec), DATASET([{
                             {24, DATASET([{'sqfeet'}, {'baths'}], ProbSpec), DATASET([{'beds'}], ProbSpec)}   // 0.987
                             ], ProbQuery);
 
-resultCondDep := prob.Dependence(testCondDep, dmethod := 'rcot');
-OUTPUT(resultCondDep, ALL, NAMED('ConditionalDependencyTests'));
+// resultCondDep := prob.Dependence(testCondDep, dmethod := 'rcot');
+// OUTPUT(resultCondDep, ALL, NAMED('ConditionalDependencyTests'));
 
-resultsCondIndep := prob.isIndependent(testCondDep, dmethod := 'rcot');
-OUTPUT(resultsCondIndep, ALL, NAMED('ConditionalIndependenceTests'));
+// resultsCondIndep := prob.isIndependent(testCondDep, dmethod := 'rcot');
+// OUTPUT(resultsCondIndep, ALL, NAMED('ConditionalIndependenceTests'));
 
-testCondDep2 := DATASET([{1, DATASET([{'price'}, {'beds'}], ProbSpec), DATASET([{'baths'},{'sqfeet'}], ProbSpec)},
-                            {2, DATASET([{'price'}, {'beds'}], ProbSpec), DATASET([{'sqfeet'},{'baths'}], ProbSpec)},
-                            {3, DATASET([{'price'}, {'baths'}], ProbSpec), DATASET([{'beds'},{'sqfeet'}], ProbSpec)},
-                            {4, DATASET([{'price'}, {'baths'}], ProbSpec), DATASET([{'sqfeet'},{'beds'}], ProbSpec)},
-                            {5, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATASET([{'beds'},{'baths'}], ProbSpec)},
-                            {6, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATASET([{'baths'},{'beds'}], ProbSpec)},
+testCondDep2 := DATASET([{1, DATASET([{'price'}, {'beds'}], ProbSpec), DATASET([{'baths'},{'sqfeet'}], ProbSpec)}], ProbQuery);
+
+// testCondDep2 := DATASET([{1, DATASET([{'price'}, {'beds'}], ProbSpec), DATASET([{'baths'},{'sqfeet'}], ProbSpec)},
+//                             {2, DATASET([{'price'}, {'beds'}], ProbSpec), DATASET([{'sqfeet'},{'baths'}], ProbSpec)},
+//                             {3, DATASET([{'price'}, {'baths'}], ProbSpec), DATASET([{'beds'},{'sqfeet'}], ProbSpec)},
+//                             {4, DATASET([{'price'}, {'baths'}], ProbSpec), DATASET([{'sqfeet'},{'beds'}], ProbSpec)},
+//                             {5, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATASET([{'beds'},{'baths'}], ProbSpec)},
+//                             {6, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATASET([{'baths'},{'beds'}], ProbSpec)},
                             
-                            {7, DATASET([{'beds'}, {'price'}], ProbSpec), DATASET([{'sqfeet'},{'baths'}], ProbSpec)},
-                            {8, DATASET([{'beds'}, {'price'}], ProbSpec), DATASET([{'baths'},{'sqfeet'}], ProbSpec)},
-                            {9, DATASET([{'beds'}, {'baths'}], ProbSpec), DATASET([{'price'},{'sqfeet'}], ProbSpec)},
-                            {10, DATASET([{'beds'}, {'baths'}], ProbSpec), DATASET([{'sqfeet'},{'price'}], ProbSpec)},
-                            {11, DATASET([{'beds'}, {'sqfeet'}], ProbSpec), DATASET([{'price'},{'baths'}], ProbSpec)},
-                            {12, DATASET([{'beds'}, {'sqfeet'}], ProbSpec), DATASET([{'baths'},{'price'}], ProbSpec)},
+//                             {7, DATASET([{'beds'}, {'price'}], ProbSpec), DATASET([{'sqfeet'},{'baths'}], ProbSpec)},
+//                             {8, DATASET([{'beds'}, {'price'}], ProbSpec), DATASET([{'baths'},{'sqfeet'}], ProbSpec)},
+//                             {9, DATASET([{'beds'}, {'baths'}], ProbSpec), DATASET([{'price'},{'sqfeet'}], ProbSpec)},
+//                             {10, DATASET([{'beds'}, {'baths'}], ProbSpec), DATASET([{'sqfeet'},{'price'}], ProbSpec)},
+//                             {11, DATASET([{'beds'}, {'sqfeet'}], ProbSpec), DATASET([{'price'},{'baths'}], ProbSpec)},
+//                             {12, DATASET([{'beds'}, {'sqfeet'}], ProbSpec), DATASET([{'baths'},{'price'}], ProbSpec)},
                             
-                            {13, DATASET([{'baths'}, {'price'}], ProbSpec), DATASET([{'beds'},{'sqfeet'}], ProbSpec)},
-                            {14, DATASET([{'baths'}, {'price'}], ProbSpec), DATASET([{'sqfeet'},{'beds'}], ProbSpec)},
-                            {15, DATASET([{'baths'}, {'beds'}], ProbSpec), DATASET([{'price'},{'sqfeet'}], ProbSpec)},
-                            {16, DATASET([{'baths'}, {'beds'}], ProbSpec), DATASET([{'sqfeet'},{'price'}], ProbSpec)},
-                            {17, DATASET([{'baths'}, {'sqfeet'}], ProbSpec), DATASET([{'price'},{'beds'}], ProbSpec)},
-                            {18, DATASET([{'baths'}, {'sqfeet'}], ProbSpec), DATASET([{'beds'},{'price'}], ProbSpec)},
+//                             {13, DATASET([{'baths'}, {'price'}], ProbSpec), DATASET([{'beds'},{'sqfeet'}], ProbSpec)},
+//                             {14, DATASET([{'baths'}, {'price'}], ProbSpec), DATASET([{'sqfeet'},{'beds'}], ProbSpec)},
+//                             {15, DATASET([{'baths'}, {'beds'}], ProbSpec), DATASET([{'price'},{'sqfeet'}], ProbSpec)},
+//                             {16, DATASET([{'baths'}, {'beds'}], ProbSpec), DATASET([{'sqfeet'},{'price'}], ProbSpec)},
+//                             {17, DATASET([{'baths'}, {'sqfeet'}], ProbSpec), DATASET([{'price'},{'beds'}], ProbSpec)},
+//                             {18, DATASET([{'baths'}, {'sqfeet'}], ProbSpec), DATASET([{'beds'},{'price'}], ProbSpec)},
                             
-                            {19, DATASET([{'sqfeet'}, {'price'}], ProbSpec), DATASET([{'beds'},{'baths'}], ProbSpec)},
-                            {20, DATASET([{'sqfeet'}, {'price'}], ProbSpec), DATASET([{'baths'},{'beds'}], ProbSpec)},
-                            {21, DATASET([{'sqfeet'}, {'beds'}], ProbSpec), DATASET([{'price'},{'baths'}], ProbSpec)},
-                            {22, DATASET([{'sqfeet'}, {'beds'}], ProbSpec), DATASET([{'baths'},{'price'}], ProbSpec)},
-                            {23, DATASET([{'sqfeet'}, {'baths'}], ProbSpec), DATASET([{'price'},{'beds'}], ProbSpec)},
-                            {24, DATASET([{'sqfeet'}, {'baths'}], ProbSpec), DATASET([{'beds'},{'price'}], ProbSpec)}
-                            ], ProbQuery);
+//                             {19, DATASET([{'sqfeet'}, {'price'}], ProbSpec), DATASET([{'beds'},{'baths'}], ProbSpec)},
+//                             {20, DATASET([{'sqfeet'}, {'price'}], ProbSpec), DATASET([{'baths'},{'beds'}], ProbSpec)},
+//                             {21, DATASET([{'sqfeet'}, {'beds'}], ProbSpec), DATASET([{'price'},{'baths'}], ProbSpec)},
+//                             {22, DATASET([{'sqfeet'}, {'beds'}], ProbSpec), DATASET([{'baths'},{'price'}], ProbSpec)},
+//                             {23, DATASET([{'sqfeet'}, {'baths'}], ProbSpec), DATASET([{'price'},{'beds'}], ProbSpec)},
+//                             {24, DATASET([{'sqfeet'}, {'baths'}], ProbSpec), DATASET([{'beds'},{'price'}], ProbSpec)}
+//                             ], ProbQuery);
 
-resultCondDep2Prob := prob.Dependence(testCondDep2, dmethod := 'prob');
-OUTPUT(resultCondDep2Prob, ALL, NAMED('ConditionalDependencyTests2Prob'));
+// resultCondDep2Prob := prob.Dependence(testCondDep2, dmethod := 'prob');
+// OUTPUT(resultCondDep2Prob, ALL, NAMED('ConditionalDependencyTests2Prob'));
 
-resultsCondIndep2prob := prob.isIndependent(testCondDep2, dmethod := 'prob');
-OUTPUT(resultsCondIndep2Prob, ALL, NAMED('ConditionalIndependenceTests2Prob'));
+// resultsCondIndep2prob := prob.isIndependent(testCondDep2, dmethod := 'prob');
+// OUTPUT(resultsCondIndep2Prob, ALL, NAMED('ConditionalIndependenceTests2Prob'));
 
-resultCondDep2rcot := prob.Dependence(testCondDep2, dmethod := 'rcot');
-OUTPUT(resultCondDep2rcot, ALL, NAMED('ConditionalDependencyTests2rcot'));
+// resultCondDep2rcot := prob.Dependence(testCondDep2, dmethod := 'rcot');
+// OUTPUT(resultCondDep2rcot, ALL, NAMED('ConditionalDependencyTests2rcot'));
 
 resultsCondIndep2rcot := prob.isIndependent(testCondDep2, dmethod := 'rcot');
 OUTPUT(resultsCondIndep2rcot, ALL, NAMED('ConditionalIndependenceTests2rcot'));
 
 // causal discovery
-RVs := DATASET([{'price'}, {'sqfeet'}, {'beds'}, {'baths'}], Types.RV);
+// RVs := DATASET([{'price'}, {'sqfeet'}, {'beds'}, {'baths'}], Types.RV);
 
-mod := DATASET([{'housing', RVs}], Types.cModel);
-OUTPUT(mod, NAMED('Model'));
+// mod := DATASET([{'housing', RVs}], Types.cModel);
+// OUTPUT(mod, NAMED('Model'));
 
-cm := HPCC_Causality.Causality(mod, NFds);
+// cm := HPCC_Causality.Causality(mod, NFds);
 
-rept := cm.DiscoverModel();
-OUTPUT(rept, NAMED('DiscoveryReport'));
+// rept := cm.DiscoverModel();
+// OUTPUT(rept, NAMED('DiscoveryReport'));

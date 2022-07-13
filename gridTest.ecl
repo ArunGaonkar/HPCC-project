@@ -78,7 +78,6 @@ ds := PROJECT(ds3, TRANSFORM ( RECORDOF (LEFT), SELF.ID := COUNTER, SELF := LEFT
 // OUTPUT(ds[..10000], ALL, NAMED('HousingDataset'));
 
 // Normalize the dataset to NumericField record type of the following reordering. 
-// counter 1,2,3,4,5 = price, sqfeet, beds, baths. types
 NFds := NORMALIZE(ds, 3, TRANSFORM (numericfield, SELF.wi := 1,
                                     SELF.number := counter,
                                     SELF.ID := LEFT.ID,
@@ -91,6 +90,9 @@ NFds := NORMALIZE(ds, 3, TRANSFORM (numericfield, SELF.wi := 1,
 v1 := 'price';
 v2 := 'sqfeet';
 v3 := 'baths';
+// beds, baths, types are discrete variables.
+
+
 
 /* Not required for the current problem.
     SEM := Types.SEM;
@@ -121,10 +123,13 @@ grid := RECORD
     SET OF REAL gridItem;
 END;
 
-makeGrid(DATASET(NumericField) ds, STRING v1, STRING v2='', STRING v3='', UNSIGNED INTEGER numPts=20, REAL lim = 1.0):= FUNCTION 
+makeGrid(DATASET(NumericField) ds, STRING v1, STRING v2='', STRING v3='', UNSIGNED INTEGER numPts=5, REAL lim = 1.0):= FUNCTION 
 
     // getting the dimension
     dims := IF(v3 = '', IF(v2 = '', 1, 2), 3);
+    
+    // prob := IF(v3 = '', IF(v2 = '', Probability(ds, [v1]), Probability(ds, [v1, v2])), Probability(ds, [v1, v2, v3]));
+
     numTests := POWER(numPts, dims);
     
     prob := Probability(ds, [v1, v2, v3]);
@@ -151,24 +156,22 @@ makeGrid(DATASET(NumericField) ds, STRING v1, STRING v2='', STRING v3='', UNSIGN
     // OUTPUT(resultDist, ALL, NAMED('Distribution'));
 
     findPoint(REAL minv, REAL maxv, UNSIGNED indx) := FUNCTION
-        val := ((maxv - minv) / (numPts) ) * indx + minv;
+        val := ((maxv - minv)/(numPts)) * indx + minv;
         return val;
     END;
 
     // have to incorporate for the case of 3 dimensions 
     grid makeItem(UNSIGNED c) := TRANSFORM
         SELF.ID := c;
-        x := TRUNCATE((c-1)/numPts);
+        x := TRUNCATE((c-1)/numPts) % numPts;
         // x := roundup((c-1)/numPts);
         y := (c-1) % (numPts);
-        self.gridItem := [findPoint(v1min, v1max, y), findPoint(v2min, v2max, y), findPoint(v3min, v3max, y)];
+        self.gridItem := [findPoint(v1min, v1max, x), findPoint(v2min, v2max, y), findPoint(v3min, v3max, y)];
     END; 
 
-    grid := DATASET(numPts, makeItem(counter));
+    grid := DATASET(numTests, makeItem(counter));
     return grid;
 END;
 
 gridResult := makeGrid(NFds, v1, v2, v3);
 OUTPUT(gridResult, ALL, NAMED('OutputGrid'));
-
-// beds, baths, types are discrete variables.
