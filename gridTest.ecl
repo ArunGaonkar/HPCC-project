@@ -92,32 +92,6 @@ v2 := 'sqfeet';
 v3 := 'baths';
 // beds, baths, types are discrete variables.
 
-
-
-/* Not required for the current problem.
-    SEM := Types.SEM;
-
-    // SEM should be a dataset containing a single row.
-    semRow := ROW({
-        ['t = 0'],   // Init is typically empty, but we are using it
-                    // to initialize a variable 't', so that we can create a
-                    // time-dependent series for illustrative purposes.
-        ['A', 'B', 'C', 'D'], // Variable names 
-        // Equations
-        ['A = normal(0,1)',  // Can use any distribution defined in numpy.random
-        'B = normal(0,1)',
-        'C = A + B',
-        'D = tanh(C) + sin(t/(2*pi)) + geometric(.1)', // Can use nearly any math function
-                                                        // from python math library.
-        't = t + 1' // t is not a returned variable, but is used (in this case)
-                // to produce a time-dependent series (note sin in D calculation above).
-        ]}, SEM);
-
-    mySEM := DATASET([semRow], SEM);
-
-    outDat := HPCC_Causality.Synth(mySEM).Generate(100);
-*/
-
 grid := RECORD 
     UNSIGNED ID;
     SET OF REAL gridItem;
@@ -127,10 +101,6 @@ makeGrid(DATASET(NumericField) ds, STRING v1, STRING v2='', STRING v3='', UNSIGN
 
     // getting the dimension
     dims := IF(v3 = '', IF(v2 = '', 1, 2), 3);
-    
-    // prob := IF(v3 = '', IF(v2 = '', Probability(ds, [v1]), Probability(ds, [v1, v2])), Probability(ds, [v1, v2, v3]));
-
-    numTests := POWER(numPts, dims);
     
     prob := Probability(ds, [v1, v2, v3]);
 
@@ -155,18 +125,24 @@ makeGrid(DATASET(NumericField) ds, STRING v1, STRING v2='', STRING v3='', UNSIGN
     // output the distribution resultdist
     // OUTPUT(resultDist, ALL, NAMED('Distribution'));
 
-    findPoint(REAL minv, REAL maxv, UNSIGNED indx) := FUNCTION
-        val := ((maxv - minv)/(numPts)) * indx + minv;
+    findPoint(REAL minv, REAL maxv, REAL numPtsx, UNSIGNED indx) := FUNCTION
+        val := ((maxv - minv)/(numPtsx)) * indx + minv;
         return val;
     END;
 
+    numPtsv1 := numPts;
+    numPtsv2 := numPts;
+    numPtsv3 := numPts;
+    
+    numTests := numPtsv1 * numPtsv2 * numPtsv3;
+    
     // have to incorporate for the case of 3 dimensions 
     grid makeItem(UNSIGNED c) := TRANSFORM
         SELF.ID := c;
-        x := TRUNCATE((c-1)/numPts) % numPts;
-        // x := roundup((c-1)/numPts);
-        y := (c-1) % (numPts);
-        self.gridItem := [findPoint(v1min, v1max, x), findPoint(v2min, v2max, y), findPoint(v3min, v3max, y)];
+        x := (c-1) DIV (numPtsv2 * numPtsv3);
+        y := ((c-1) DIV numPtsv3) % numPtsv2;
+        z := (c-1) % (numPtsv3);
+        self.gridItem := [findPoint(v1min, v1max, numPtsv1, x), findPoint(v2min, v2max, numPtsv2, y), findPoint(v3min, v3max, numPtsv3, z)];
     END; 
 
     grid := DATASET(numTests, makeItem(counter));
@@ -175,3 +151,92 @@ END;
 
 gridResult := makeGrid(NFds, v1, v2, v3);
 OUTPUT(gridResult, ALL, NAMED('OutputGrid'));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* version 1.0 without considering the discrete variables
+
+makeGrid(DATASET(NumericField) ds, STRING v1, STRING v2='', STRING v3='', UNSIGNED INTEGER numPts1=20, UNSIGNED INTEGER numPts2=20, UNSIGNED INTEGER numPts3=20, REAL lim = 1.0):= FUNCTION 
+
+    // getting the dimension
+    dims := IF(v3 = '', IF(v2 = '', 1, 2), 3);
+    
+    // prob := IF(v3 = '', IF(v2 = '', Probability(ds, [v1]), Probability(ds, [v1, v2])), Probability(ds, [v1, v2, v3]));
+
+    // numTests := POWER(numPts, dims);
+    
+    prob := Probability(ds, [v1, v2, v3]);
+
+    testDists := DATASET([{1, DATASET([{v1}], ProbSpec), DATASET([], ProbSpec)},
+                        {2, DATASET([{v2}], ProbSpec), DATASET([], ProbSpec)},
+                        {3, DATASET([{v3}], ProbSpec), DATASET([], ProbSpec)}
+                    ], ProbQuery);
+    
+    testdist2 := testDists[1..dims];
+
+    // getting the distributions
+    resultDist := prob.Distr(testDist2);
+    
+    // calcularing the minimum and maximum values of the distribution
+    v1min := resultDist[1].minval;
+    v1max := resultDist[1].maxval;
+    v2min := resultDist[2].minval;
+    v2max := resultDist[2].maxval;    
+    v3min := resultDist[3].minval; 
+    v3max := resultDist[3].maxval;
+
+    // output the distribution resultdist
+    // OUTPUT(resultDist, ALL, NAMED('Distribution'));
+
+    findPoint(REAL minv, REAL maxv, REAL numPtsx, UNSIGNED indx) := FUNCTION
+        val := ((maxv - minv)/(numPtsx)) * indx + minv;
+        return val;
+    END;
+
+    numPtsv1 := numPts1;
+    numPtsv2 := 20;
+    numPtsv3 := 30;
+    
+    numTests := numPtsv1 * numPtsv2 * numPtsv3;
+    
+    // have to incorporate for the case of 3 dimensions 
+    grid makeItem(UNSIGNED c) := TRANSFORM
+        SELF.ID := c;
+        x := (c-1) DIV (numPtsv2 * numPtsv3);
+        y := ((c-1) DIV numPtsv3) % numPtsv2;
+        z := (c-1) % (numPtsv3);
+        self.gridItem := [findPoint(v1min, v1max, numPtsv1, x), findPoint(v2min, v2max, numPtsv2, y), findPoint(v3min, v3max, numPtsv3, z)];
+    END; 
+
+    grid := DATASET(numTests, makeItem(counter));
+    return grid;
+END;
+
+gridResult := makeGrid(NFds, v1, v2, v3);
+OUTPUT(gridResult, ALL, NAMED('OutputGrid'));
+*/

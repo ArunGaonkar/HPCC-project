@@ -230,6 +230,8 @@ testCondDep1var := DATASET([{1, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATA
 // OUTPUT(resultsCondIndep2, ALL, NAMED('ConditionalIndependenceTestsRCOT'));
 
 // Conditional dependency tests on 2 varible
+
+// I had kept this to compare the runtime between a single query and all the queries.
 // testCondDep2var := DATASET([{1, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATASET([{'beds'}, {'baths'}], ProbSpec)}], ProbQuery);
 
 testCondDep2var := DATASET([{1, DATASET([{'price'}, {'sqfeet'}], ProbSpec), DATASET([{'beds'}, {'baths'}], ProbSpec)},
