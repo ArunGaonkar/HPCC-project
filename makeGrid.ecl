@@ -17,7 +17,7 @@ grid := RECORD
     SET OF REAL gridItem;
 END;
 
-EXPORT makeGrid(DATASET(NumericField) ds, STRING v1, STRING v2='', STRING v3='', UNSIGNED INTEGER numPts=5, REAL lim = 1.0):= FUNCTION 
+EXPORT makeGrid(DATASET(NumericField) ds, STRING v1, STRING v2='', STRING v3='', UNSIGNED INTEGER numPts=20, REAL lim = 1.0):= FUNCTION 
 
     // getting the dimension
     dims := IF(v3 = '', IF(v2 = '', 1, 2), 3);
@@ -50,9 +50,9 @@ EXPORT makeGrid(DATASET(NumericField) ds, STRING v1, STRING v2='', STRING v3='',
         return val;
     END;
 
-    numPtsv1 := 10;
-    numPtsv2 := 20;
-    numPtsv3 := 30;
+    numPtsv1 := numPts;
+    numPtsv2 := numPts;
+    numPtsv3 := numPts;
     
     numTests := numPtsv1 * numPtsv2 * numPtsv3;
     
