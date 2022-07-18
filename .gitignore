@@ -1,3 +1,8 @@
 .vscode
 *.log
 try*
+*.csv
+*.XPT
+*_r.ipynb
+.ipynb_checkpoints
+*.zip
