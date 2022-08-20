@@ -6,3 +6,4 @@ try*
 *_r.ipynb
 .ipynb_checkpoints
 *.zip
+*.eclnb
